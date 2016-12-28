@@ -37,18 +37,15 @@ public class Client {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            System.out.println("Введите свой ник:");
-            out.println(scan.nextLine());
-
-            Broadcast resend = new Broadcast(in);
-            resend.start();
+            Broadcast broadcast = new Broadcast(in);
+            broadcast.start();
 
             String str = "";
-            while (!str.equals("exit") & resend.isAlive()) {
+            while (!str.equals("exit") & broadcast.isAlive()) {
                 str = scan.nextLine();
                 out.println(str);
             }
-            resend.setStop();
+            broadcast.setStop();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

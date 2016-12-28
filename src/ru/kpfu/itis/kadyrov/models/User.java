@@ -11,7 +11,6 @@ import java.net.Socket;
  */
 public class User {
     private long id;
-    private String name;
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
@@ -26,9 +25,8 @@ public class User {
         this.hand = hand;
     }
 
-    public User(long id, String name, Socket socket) {
+    public User(long id, Socket socket) {
         this.id = id;
-        this.name = name;
         this.socket = socket;
         try {
             in = new BufferedReader(new InputStreamReader(
@@ -57,14 +55,6 @@ public class User {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Socket getSocket() {

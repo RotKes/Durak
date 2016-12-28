@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class Server {
+public class Server extends Thread {
 
     public static void main(String[] args) {
         new Server();
@@ -23,27 +23,42 @@ public class Server {
 
 
     private ServerSocket server;
+    private boolean running = true;
 
 
     public Server() {
         try {
             server = new ServerSocket(3456);
-
-            while (true) {
-                List<User> users = new ArrayList<User>();
-                while (users.size() < 2) {
-                    Socket socket = server.accept();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(
-                            socket.getInputStream()));
-                    User user = new User(users.size(), in.readLine(), socket);
-                    users.add(user);
-                }
-                Game game = new Game(users);
-                game.play();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    @Override
+    public void run() {
+        while (running) {
+            List<User> users = new ArrayList<User>();
+            while (users.size() < 2) {
+                try {
+                    Socket socket = server.accept();
+                    BufferedReader in = new BufferedReader(new InputStreamReader(
+                            socket.getInputStream()));
+                    User user = new User(users.size(), socket);
+                    users.add(user);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Game game = new Game(users);
+            try {
+                game.play();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void stopServer(){
+        running = false;
+    }
 }
