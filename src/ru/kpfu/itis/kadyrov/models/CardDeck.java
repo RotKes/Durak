@@ -19,27 +19,19 @@ public class CardDeck {
         cards = new ArrayList<>();
         if (!empty) {
             int id = 1;
-            cards.add(new Card(id, 0, Suit.CLUBS));
-            id++;
-            cards.add(new Card(id, 0, Suit.DIAMONDS));
-            id++;
-            cards.add(new Card(id, 0, Suit.HEARTS));
-            id++;
-            cards.add(new Card(id, 0, Suit.SPADES));
-            id++;
-            for (int i = 6; i < 14; i++) {
+            for (int i = 6; i < 15; i++) {
                 cards.add(new Card(id, i, Suit.CLUBS));
                 id++;
             }
-            for (int i = 1; i < 13; i++) {
+            for (int i = 6; i < 15; i++) {
                 cards.add(new Card(id, i, Suit.DIAMONDS));
                 id++;
             }
-            for (int i = 1; i < 13; i++) {
+            for (int i = 6; i < 15; i++) {
                 cards.add(new Card(id, i, Suit.HEARTS));
                 id++;
             }
-            for (int i = 1; i < 13; i++) {
+            for (int i = 6; i < 15; i++) {
                 cards.add(new Card(id, i, Suit.SPADES));
                 id++;
             }
@@ -123,10 +115,13 @@ public class CardDeck {
         Collections.shuffle(cards);
     }
 
-    public String showCard() {
+    public String showCards() {
         String message = "";
         for (Card card : getCards()) {
             message = message + card + " ";
+        }
+        if (message.equals("")) {
+            message = message + " The desk is empty.";
         }
         return message;
     }

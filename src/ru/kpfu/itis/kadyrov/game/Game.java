@@ -43,46 +43,66 @@ public class Game {
 
 
     public void play() throws IOException {
-        //start game
         deck.reshuffle();
+        setTrumpCard(deck.getTrump());
 
-        //start hands
         for (User user : users) {
             for (int i = 0; i < 6; i++) {
                 user.getHand().putCard(deck.draw());
             }
         }
 
-        //first hands show
         for (User user : users) {
             user.handOut();
         }
 
         User player1 = users.get(0);
         User player2 = users.get(1);
+        boolean finish = false;
 
-        //Game loop
-        while (player1.getHand().getCards().size() != 0 && player2.getHand().getCards().size() != 0) {
+        while (!finish) {
             if (!player1.isPickedUpCards()) {
                 attack(player1, player2);
             }
-            if (!player2.isPickedUpCards()) {
+            if (checkWinning(player1)) {
+                finish = true;
+                continue;
+            }
+
+            if (!player2.isPickedUpCards() && !checkWinning(player1)) {
                 attack(player2, player1);
             }
+
+            if (checkWinning(player2))
+                finish = true;
         }
 
+        if (checkWinning(player1)){
+            player1.getOut().println("You won!");
+            player2.getOut().println("You lost!");
+        }
+        else {
+            player2.getOut().println("You won!");
+            player1.getOut().println("You lost!");
+        }
+
+        player1.close();
+        player2.close();
     }
 
 
     // -----------------------------------------------------------------------------------------------
 
 
-    public ArrayList<Card> giveCardsToPlayer(ArrayList<Card> playerCards, LinkedList<Card> deck) {
-        int size = playerCards.size();
-        for (int i = 0; i < 6 - size; i++) {
-            playerCards.add(deck.poll());
+    public void giveCardsToPlayer(User player, CardDeck cardDeck) {
+        int size = player.getHand().getCards().size();
+        for (int i = 0; i < 6 - size && cardDeck.getCards().size() != 0; i++) {
+            player.getHand().getCards().add(cardDeck.draw());
         }
-        return playerCards;
+    }
+
+    public boolean checkWinning(User player) {
+        return player.getHand().getCards().size() == 0;
     }
 
     public boolean canBeatCard(Card beatPlayerCard, Card cardOnTable) {
@@ -110,31 +130,48 @@ public class Game {
         player.getOut().println("Trump is " + trump);
         player.handOut();
         player.getOut().println("Cards on the desk: ");
-        deskCards.showCard();
+        player.getOut().println(deskCards.showCards());
         BufferedReader in = player.getIn();
         boolean completeAttack = false;
-        while (!completeAttack) {
+        boolean isBeat = false;
+        if (player.getHand().getCards().size() == 0) {
+            completeAttack = true;
+        }
+        while (!completeAttack && !isBeat) {
             String message = in.readLine();
-            if (message.contains("beat")) {
-                deskCards.getCards().clear();
-                completeAttack = true;
-            } else {
-                int id = Integer.parseInt(message);
-                if (player.getHand().isContainsId(id)) {
-                    Card card = player.getHand().getCardById(id);
-                    if (addCardOnGamingDesk(card, deskCards)) {
-                        deskCards.putCard(player.getHand().getCardByIdAndRemoveFromDeck(id));
-                        completeAttack = true;
-                    } else {
-                        player.getOut().println("There is no such card rank in the table deck. Try again another card.");
-                    }
+            boolean canContinue = !(deskCards.getCards().size() > 12);
+            if (canContinue) {
+                if (message.toLowerCase().contains("beat")) {
+                    deskCards.getCards().clear();
+                    completeAttack = true;
+                    isBeat = true;
+                    giveCardsToPlayer(opponent, deck);
+                    giveCardsToPlayer(player, deck);
+                    player.getOut().println(deck.getCards().size() + " cards left in the deck");
+                    opponent.getOut().println(deck.getCards().size() + " cards left in the deck");
                 } else {
-                    player.getOut().println("You have no such card. Try again.");
+                    int id = Integer.parseInt(message);
+                    if (player.getHand().isContainsId(id)) {
+                        Card card = player.getHand().getCardById(id);
+                        if (addCardOnGamingDesk(card, deskCards)) {
+                            deskCards.putCard(player.getHand().getCardByIdAndRemoveFromDeck(id));
+                            completeAttack = true;
+                        } else {
+                            player.getOut().println("There is no such card rank in the table deck. Try again another card.");
+                        }
+                    } else {
+                        player.getOut().println("You have no such card. Try again.");
+                    }
                 }
+            }
+            else {
+                player.getOut().println("You can't place cards anymore.");
             }
         }
         player.getOut().println("Wait for your opponent");
-        defend(opponent, player);
+        if (!isBeat) {
+            defend(opponent, player);
+        }
     }
 
     public void defend(User player, User opponent) throws IOException {
@@ -142,14 +179,17 @@ public class Game {
         player.getOut().println("Trump is " + trump);
         player.handOut();
         player.getOut().println("Cards on the desk: ");
-        deskCards.showCard();
+        player.getOut().println(deskCards.showCards());
         BufferedReader in = player.getIn();
         boolean completeDefend = false;
         while (!completeDefend) {
             String message = in.readLine();
-            if (message.contains("pick")) {
+            if (message.toLowerCase().contains("pick")) {
                 player.getHand().takeCardsFromTable(deskCards);
                 player.pickedUpCards(true);
+                giveCardsToPlayer(opponent, deck);
+                player.getOut().println(deck.getCards().size() + " cards left in the deck");
+                opponent.getOut().println(deck.getCards().size() + " cards left in the deck");
                 completeDefend = true;
             } else {
                 int id = Integer.parseInt(message);
