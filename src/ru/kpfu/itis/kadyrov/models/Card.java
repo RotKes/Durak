@@ -4,10 +4,12 @@ package ru.kpfu.itis.kadyrov.models;
  * Created by Амир on 11.12.2016.
  */
 public class Card {
+    private int id;
     private int number;
     private Suit suit;
 
-    public Card(int number, Suit suit) {
+    public Card(int id, int number, Suit suit) {
+        this.id = id;
         this.number = number;
         this.suit = suit;
     }
@@ -28,8 +30,17 @@ public class Card {
         this.suit = suit;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
-        return number + " " + suit;
+        return "[" + id + " | " + number + " " + suit + "]";
     }
+
 }
